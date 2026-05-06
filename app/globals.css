@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pillar-1: #6366f1;
+  --color-pillar-2: #ec4899;
+  --color-pillar-3: #14b8a6;
+  --color-pillar-4: #f59e0b;
+  --color-pillar-5: #8b5cf6;
+  --color-pillar-6: #10b981;
+  --color-pillar-7: #ef4444;
+}
+
+html, body {
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Slot in calendar — pillar color via CSS var */
+.slot {
+  background-color: color-mix(in srgb, var(--pillar-color) 12%, transparent);
+  border-left: 3px solid var(--pillar-color);
+}
+
+.slot-fixed {
+  background-color: color-mix(in srgb, var(--pillar-color) 22%, transparent);
+}
+
+.pillar-dot {
+  background-color: var(--pillar-color);
+}
+
+@keyframes pulse-deficit {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+.deficit-dot {
+  animation: pulse-deficit 1.6s ease-in-out infinite;
+}
