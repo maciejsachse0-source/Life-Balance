@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
   --color-pillar-1: #6366f1;
   --color-pillar-2: #ec4899;
   --color-pillar-3: #14b8a6;
@@ -8,17 +10,94 @@
   --color-pillar-5: #8b5cf6;
   --color-pillar-6: #10b981;
   --color-pillar-7: #ef4444;
+
+  /* Legacy indigo → soft slate remap (kept for pages not yet migrated).
+     New components MUST use neutral-900 / neutral-500 + AppShell. */
+  --color-indigo-50:  #f1f5f9;
+  --color-indigo-100: #e2e8f0;
+  --color-indigo-200: #cbd5e1;
+  --color-indigo-300: #94a3b8;
+  --color-indigo-400: #64748b;
+  --color-indigo-500: #475569;
+  --color-indigo-600: #334155;
+  --color-indigo-700: #1e293b;
+  --color-indigo-800: #0f172a;
+  --color-indigo-900: #020617;
+
+  /* Legacy cream (now unused — kept to avoid breaking layout.tsx).
+     New backgrounds come from .app-gradient on AppShell. */
+  --color-cream-50:  #fafaf9;
+  --color-cream-100: #f5f5f4;
+
+  /* Sunset gradient stops (top → bottom): periwinkle → peach → coral → soft pink */
+  --grad-1: #d4dff2;
+  --grad-2: #f4c3a5;
+  --grad-3: #f0a191;
+  --grad-4: #e8b0b4;
+  --grad-5: #ede0e8;
+
+  /* Mini-bar viz accents */
+  --color-accent-coral:    #fb923c;
+  --color-accent-peach:    #fdba74;
+  --color-accent-lavender: #c4b5fd;
 }
 
 html, body {
   height: 100%;
 }
 
+body {
+  font-feature-settings:
+    "cv11" on,   /* single-storey a */
+    "ss01" on,   /* open digits */
+    "kern" on;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Numerals lock to tabular figures everywhere — Apple-Weather feel. */
+.tabular-nums,
+.stat-card {
+  font-variant-numeric: tabular-nums;
+}
+
 * {
   box-sizing: border-box;
 }
 
-/* Slot in calendar — pillar color via CSS var */
+/* Warm off-white page background. Class name kept as .app-gradient
+   so AppShell wiring doesn't change. */
+.app-gradient {
+  background-color: #faf8f3;
+  min-height: 100vh;
+}
+
+/* The card — clean white on warm off-white. Soft border + subtle layered
+   shadow so the card lifts off the page without backdrop blur. */
+.stat-card {
+  background-color: #ffffff;
+  border: 1px solid rgb(0 0 0 / 0.06);
+  border-radius: 24px;
+  box-shadow:
+    0 1px 2px rgba(20, 18, 12, 0.04),
+    0 8px 24px -14px rgba(20, 18, 12, 0.10);
+}
+
+/* Tiny small-caps label — the system's hallmark. Apply via .stat-label. */
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  color: rgb(115 115 115);
+  line-height: 1.4;
+}
+@media (min-width: 640px) {
+  .stat-label { font-size: 11px; }
+}
+
+/* Calendar pillar slot — unchanged */
 .slot {
   background-color: color-mix(in srgb, var(--pillar-color) 12%, transparent);
   border-left: 3px solid var(--pillar-color);
@@ -39,4 +118,166 @@ html, body {
 
 .deficit-dot {
   animation: pulse-deficit 1.6s ease-in-out infinite;
+}
+
+/* Layer-tile (Fizjologia / Podatki) — pastel colored mini-cards.
+   Set --phys-fg / --phys-bg inline. */
+.phys-tile {
+  background-color: var(--phys-bg);
+  border: 1px solid color-mix(in srgb, var(--phys-fg) 18%, transparent);
+  border-radius: 16px;
+}
+.phys-tile-icon {
+  background-color: color-mix(in srgb, var(--phys-fg) 20%, transparent);
+  color: var(--phys-fg);
+}
+
+/* Slider — Apple Weather aesthetic.
+   The track is the full sunset gradient (warm→cool, left→right) — fixed,
+   not a fill state. The thumb is a vertical white pill that slides along it. */
+.ui-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--grad-2) 0%,
+    var(--grad-3) 30%,
+    var(--grad-4) 60%,
+    var(--grad-1) 100%
+  );
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.04);
+}
+.ui-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--grad-2) 0%,
+    var(--grad-3) 30%,
+    var(--grad-4) 60%,
+    var(--grad-1) 100%
+  );
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.04);
+}
+
+.ui-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  width: 6px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgb(0 0 0 / 0.08);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.22),
+    0 0 0 0.5px rgb(0 0 0 / 0.05);
+  margin-top: -7px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.ui-slider::-moz-range-thumb {
+  height: 22px;
+  width: 6px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgb(0 0 0 / 0.08);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.22),
+    0 0 0 0.5px rgb(0 0 0 / 0.05);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.ui-slider:hover::-webkit-slider-thumb { transform: scaleY(1.08); }
+.ui-slider:hover::-moz-range-thumb { transform: scaleY(1.08); }
+
+.ui-slider:active::-webkit-slider-thumb,
+.ui-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.22),
+    0 0 0 3px rgb(255 255 255 / 0.7);
+}
+.ui-slider:active::-moz-range-thumb,
+.ui-slider:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.22),
+    0 0 0 3px rgb(255 255 255 / 0.7);
+}
+
+/* ---------------------------------------------------------------------------
+   Liquid Glass pill — used by the floating SideNav (components/SideNav.tsx).
+   Translucent body, refractive rim with bright top specular and a softer
+   bottom return, sitting on the sunset gradient. The container itself wears
+   this; the moving active-item thumb has its own (stronger) recipe inline.
+   Do NOT reuse on ordinary buttons — see DESIGN.md §6.
+   --------------------------------------------------------------------------- */
+
+.liquid-pill {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    /* outer depth */
+    0 18px 50px -18px rgba(50, 40, 80, 0.4),
+    0 4px 14px -4px rgba(50, 40, 80, 0.18),
+    /* bright top rim — the defining specular */
+    inset 0 1.5px 0.5px 0 rgba(255, 255, 255, 0.95),
+    /* bottom rim — refractive return light */
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.55),
+    /* side rim glow */
+    inset 1px 0 1px -1px rgba(255, 255, 255, 0.55),
+    inset -1px 0 1px -1px rgba(255, 255, 255, 0.55),
+    /* inner volumetric light */
+    inset 0 0 32px -12px rgba(255, 255, 255, 0.55);
+}
+
+/* Glossy "smile" highlight near the top edge — the bright streak you see
+   on real liquid-glass renders just inside the top rim. */
+.liquid-pill::before {
+  content: "";
+  position: absolute;
+  inset: 2px 12% auto 12%;
+  height: 32%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+}
+
+/* Soft bottom reflection picking up light from beneath the pill. */
+.liquid-pill::after {
+  content: "";
+  position: absolute;
+  inset: auto 20% 1px 20%;
+  height: 16%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(2px);
 }

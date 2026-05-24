@@ -2,6 +2,8 @@
 
 Web app for time + goal management, ADHD-friendly. 3 dimensions: **time allocation** (gross/net calculator), **goals** (3 characters: project/routine/mixed), **weekly calendar** with suggestion engine.
 
+> 🎨 **For any UI/visual work, READ `DESIGN.md` FIRST.** It defines the sunset-gradient + white-card design language, the primitives in `components/ui/`, and the do/don't rules. New components MUST follow it. Do not invent new visual patterns without updating DESIGN.md.
+
 ## Core principles
 1. Increases awareness, never blocks.
 2. Everything editable (pillar count, layer names, defaults).
