@@ -163,6 +163,12 @@ export type Thought = {
 
 // === Settings ===
 
+export type PersonalValue = {
+  id: string;
+  title: string;
+  description?: string;
+};
+
 export type Settings = {
   selectedTemplate?: string;
   balanceMode: BalanceMode;
@@ -170,6 +176,10 @@ export type Settings = {
   lastGoalViewPerGoalId: Record<string, GoalView>;
   changeCounter: number;
   onboardingCompleted: boolean;
+  personalMission?: string;
+  personalVision?: string;
+  dailyIntention?: string;
+  personalValues?: PersonalValue[];
 };
 
 // === App state root ===

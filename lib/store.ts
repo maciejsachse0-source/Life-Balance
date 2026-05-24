@@ -8,6 +8,7 @@ import type {
   Layers,
   LayerCategory,
   Pillar,
+  PersonalValue,
   Slot,
   Thought,
   Settings,
@@ -86,6 +87,12 @@ type StoreActions = {
   setBalanceMode: (mode: Settings["balanceMode"]) => void;
   setLastCalendarView: (view: Settings["lastCalendarView"]) => void;
   setLastGoalView: (goalId: string, view: Settings["lastGoalViewPerGoalId"][string]) => void;
+  setPersonalMission: (v: string) => void;
+  setPersonalVision: (v: string) => void;
+  setDailyIntention: (v: string) => void;
+  addPersonalValue: (title: string) => string;
+  updatePersonalValue: (id: string, patch: { title?: string; description?: string }) => void;
+  removePersonalValue: (id: string) => void;
 };
 
 type Store = AppState & StoreActions;
@@ -445,6 +452,51 @@ export const useStore = create<Store>()(
             lastGoalViewPerGoalId: { ...get().settings.lastGoalViewPerGoalId, [goalId]: view },
           },
         }),
+      setPersonalMission: (v) =>
+        set({ settings: { ...get().settings, personalMission: v } }),
+      setPersonalVision: (v) =>
+        set({ settings: { ...get().settings, personalVision: v } }),
+      setDailyIntention: (v) =>
+        set({ settings: { ...get().settings, dailyIntention: v } }),
+      addPersonalValue: (title) => {
+        const id = uid();
+        const current = get().settings.personalValues ?? [];
+        set({
+          settings: {
+            ...get().settings,
+            personalValues: [...current, { id, title: title.trim() }],
+          },
+        });
+        return id;
+      },
+      updatePersonalValue: (id, patch) => {
+        const current = get().settings.personalValues ?? [];
+        const next = current
+          .map((v) => {
+            if (v.id !== id) return v;
+            const updated: PersonalValue = { ...v };
+            if (patch.title !== undefined) updated.title = patch.title.trim();
+            if (patch.description !== undefined) {
+              const d = patch.description.trim();
+              if (d) updated.description = d;
+              else delete updated.description;
+            }
+            return updated;
+          })
+          .filter((v) => v.title.length > 0 || v.description);
+        set({
+          settings: { ...get().settings, personalValues: next },
+        });
+      },
+      removePersonalValue: (id) => {
+        const current = get().settings.personalValues ?? [];
+        set({
+          settings: {
+            ...get().settings,
+            personalValues: current.filter((v) => v.id !== id),
+          },
+        });
+      },
     }),
     {
       name: STORAGE_KEY,
