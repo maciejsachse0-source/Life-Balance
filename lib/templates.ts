@@ -4,6 +4,7 @@ import type { Layers } from "./types";
 export type TemplateDef = {
   id: string;
   name: string;
+  tagline: string;
   description: string;
   layers: Omit<Layers, "pillars"> & {
     pillars: Array<Omit<Layers["pillars"][number], "id">>;
@@ -24,6 +25,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     id: "classic-6",
     name: "Klasyczna 6-elementowa",
+    tagline: "Dla niezdecydowanych — solidny punkt startu.",
     description: "Sześć obszarów życia z balansem pracy, zdrowia i relacji.",
     layers: {
       physiology: [
@@ -48,6 +50,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     id: "founder",
     name: "Founder/Przedsiębiorca",
+    tagline: "Gdy firma to większość Twojego życia.",
     description: "Dla osoby budującej własną firmę — większy nacisk na sprzedaż i produkt.",
     layers: {
       physiology: [
@@ -72,6 +75,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     id: "student",
     name: "Student/Naukowiec",
+    tagline: "Gdy nauka jest na pierwszym miejscu.",
     description: "Studia jako główna oś, miejsce na pasję i wzajemne relacje.",
     layers: {
       physiology: [
@@ -96,6 +100,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     id: "parent",
     name: "Rodzic",
+    tagline: "Gdy dzieci wymagają regularnego czasu.",
     description: "Dla rodzica — rodzina i dom z wagą równą lub większą niż praca.",
     layers: {
       physiology: [
@@ -120,6 +125,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     id: "minimal-4",
     name: "Minimalistyczna 4-elementowa",
+    tagline: "Mniej znaczy więcej.",
     description: "Cztery obszary, bez rozdrabniania. Dla wyznawców prostoty.",
     layers: {
       physiology: [
@@ -142,6 +148,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     id: "blank",
     name: "Custom od zera",
+    tagline: "Pełna kontrola od pierwszego kliknięcia.",
     description: "Pusta plansza. Sam dodajesz wszystkie filary.",
     layers: {
       physiology: [
