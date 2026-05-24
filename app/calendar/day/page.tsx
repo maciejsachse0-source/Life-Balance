@@ -60,7 +60,7 @@ export default function DayCalendarPage() {
     toggleCompletion(slotId, weekStartDate, dateStr, completed);
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-4">
+    <main className="max-w-screen-xl mx-auto px-4 py-4">
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => setOffset((o) => o - 1)} className="p-1.5 hover:bg-neutral-100 rounded">
           <ChevronLeft size={18} />

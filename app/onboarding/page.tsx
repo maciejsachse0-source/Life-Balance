@@ -5,8 +5,14 @@ import { useStore, TEMPLATES_LIST } from "@/lib/store";
 import { useHydrated } from "@/lib/hydration";
 import { Spinner } from "@/components/Spinner";
 import { PillarIcon } from "@/components/PillarIcon";
-import { BottomNav } from "@/components/BottomNav";
+import { SideNav } from "@/components/SideNav";
 import { LayersEditor } from "@/components/LayersEditor";
+import {
+  AppShell,
+  StatCard,
+  StatCardHeader,
+  Button,
+} from "@/components/ui";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -40,103 +46,104 @@ export default function OnboardingPage() {
 
   if (!current) {
     return (
-      <main className="min-h-screen px-6 py-12 max-w-6xl mx-auto">
-        <header className="mb-10 text-center">
-          <h1 className="text-4xl font-bold text-neutral-900 mb-3">Życie w równowadze</h1>
-          <p className="text-neutral-600 text-lg max-w-2xl mx-auto">
+      <AppShell width="wide">
+        <header className="px-2 mb-2 text-center">
+          <div className="stat-label">Witaj</div>
+          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-neutral-900 mt-2 leading-tight">
+            Życie w równowadze
+          </h1>
+          <p className="text-sm sm:text-base text-neutral-700 mt-3 max-w-2xl mx-auto">
             Wybierz punkt startu — szablon dopasujesz później. Każdy wybór można zmienić w
             ustawieniach, nic nie jest na stałe.
           </p>
         </header>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {TEMPLATES_LIST.map((t) => (
             <TemplateCard key={t.id} t={t} onClick={() => choose(t.id, false)} />
           ))}
         </div>
 
-        <p className="text-center text-xs text-neutral-400 mt-10">
+        <p className="text-center text-xs text-neutral-500 mt-6">
           Apka działa lokalnie — Twoje dane nie wychodzą poza tę przeglądarkę.
         </p>
-      </main>
+      </AppShell>
     );
   }
 
   return (
-    <main className="pb-24">
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-baseline justify-between gap-3">
-          <h1 className="text-lg font-semibold">Szablon</h1>
-          <div className="text-xs text-neutral-500 truncate">
-            Aktualny: <span className="font-medium text-indigo-600">{current.name}</span>
+    <>
+      <AppShell width="wide">
+        <header className="px-2 mb-2 flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <div className="stat-label">Szablon</div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 mt-1 leading-tight truncate">
+              {current.name}
+            </h1>
+            <p className="text-sm text-neutral-700 mt-1">{current.description}</p>
           </div>
-        </div>
-      </header>
+          <Button
+            onClick={() => {
+              regenerateTemplate();
+              router.push("/dashboard");
+            }}
+            className="shrink-0"
+          >
+            Zregeneruj tydzień →
+          </Button>
+        </header>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-8">
-        <section>
-          <div className="flex items-baseline justify-between mb-3 gap-3">
-            <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500">
-                Edycja aktualnego szablonu
-              </div>
-              <h2 className="text-2xl font-bold text-indigo-700">{current.name}</h2>
-              <p className="text-sm text-neutral-600">{current.description}</p>
-            </div>
-            <button
-              onClick={() => {
-                regenerateTemplate();
-                router.push("/dashboard");
-              }}
-              className="shrink-0 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"
-            >
-              Zregeneruj tydzień →
-            </button>
-          </div>
-          <LayersEditor />
-          <p className="text-xs text-neutral-500 mt-3">
-            Zmiany zapisują się automatycznie. „Zregeneruj tydzień" nadpisze szablon kalendarza
-            wynikiem.
-          </p>
-        </section>
+        <LayersEditor />
+        <p className="text-xs text-neutral-600 px-2">
+          Zmiany zapisują się automatycznie. „Zregeneruj tydzień" nadpisze szablon kalendarza
+          wynikiem.
+        </p>
 
-        <section>
-          <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">
-            Zmień szablon
-          </div>
-          <p className="text-sm text-neutral-500 mb-4">
+        <StatCard>
+          <StatCardHeader label="Zmień szablon" />
+          <p className="text-sm text-neutral-600 mb-4">
             Wybór nadpisze filary, warstwy i szablon tygodnia. Cele i myśli zostaną.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {others.map((t) => (
-              <TemplateCard key={t.id} t={t} onClick={() => choose(t.id, true)} />
+              <TemplateCard key={t.id} t={t} onClick={() => choose(t.id, true)} embedded />
             ))}
           </div>
-        </section>
-      </div>
-
-      <BottomNav />
-    </main>
+        </StatCard>
+      </AppShell>
+      <SideNav />
+    </>
   );
 }
 
 function TemplateCard({
   t,
   onClick,
+  embedded,
 }: {
   t: (typeof TEMPLATES_LIST)[number];
   onClick: () => void;
+  embedded?: boolean;
 }) {
+  const physH = t.layers.physiology.reduce((s, c) => s + c.hoursPerWeek, 0);
+  const taxH = t.layers.lifeTaxes.reduce((s, c) => s + c.hoursPerWeek, 0);
+  const pulaH = Math.max(0, 168 - physH - taxH);
   return (
     <button
       onClick={onClick}
-      className="text-left bg-white border border-neutral-200 rounded-xl p-5 hover:border-neutral-400 hover:shadow-md transition-all group"
+      className={
+        embedded
+          ? "text-left bg-white/60 backdrop-blur-sm border border-neutral-200 rounded-2xl p-5 hover:bg-white hover:border-neutral-300 transition-all group"
+          : "text-left stat-card p-5 hover:shadow-[0_20px_50px_-12px_rgba(50,40,80,0.25)] hover:-translate-y-0.5 transition-all group"
+      }
     >
-      <h2 className="font-semibold text-lg mb-2 group-hover:text-indigo-600">{t.name}</h2>
-      <p className="text-sm text-neutral-600 mb-4 min-h-[3em]">{t.description}</p>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="stat-label">Szablon</div>
+      <h2 className="text-xl font-bold text-neutral-900 tracking-tight mt-1">{t.name}</h2>
+      <p className="text-sm font-medium text-neutral-700 mt-1">{t.tagline}</p>
+      <p className="text-sm text-neutral-600 mt-2 min-h-[3em]">{t.description}</p>
+      <div className="flex flex-wrap gap-1.5 mt-3">
         {t.layers.pillars.length === 0 ? (
-          <span className="text-xs text-neutral-400 italic">Bez filarów na start</span>
+          <span className="text-xs text-neutral-500 italic">Bez filarów na start</span>
         ) : (
           t.layers.pillars.map((p, i) => (
             <span
@@ -150,9 +157,13 @@ function TemplateCard({
           ))
         )}
       </div>
-      <div className="mt-3 text-xs text-neutral-400">
-        {t.layers.pillars.length} {t.layers.pillars.length === 1 ? "filar" : "filary"} · suma wag{" "}
-        {t.layers.pillars.reduce((s, p) => s + p.weight, 0).toFixed(1)}
+      <div className="mt-4 pt-3 border-t border-neutral-200/70 flex items-center justify-between gap-2">
+        <span className="stat-label">
+          {t.layers.pillars.length} {t.layers.pillars.length === 1 ? "filar" : "filary"}
+        </span>
+        <span className="text-sm font-semibold tabular-nums text-neutral-900">
+          ≈ {pulaH}h <span className="text-xs text-neutral-500 font-normal">/ tydz</span>
+        </span>
       </div>
     </button>
   );

@@ -5,7 +5,15 @@ import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/hydration";
 import { Spinner } from "@/components/Spinner";
-import { BottomNav } from "@/components/BottomNav";
+import { SideNav } from "@/components/SideNav";
+import {
+  AppShell,
+  StatCard,
+  StatCardHeader,
+  Button,
+  LinkButton,
+  SplitGrid,
+} from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { seedDemoData } from "@/lib/seed";
 import { Sparkles } from "lucide-react";
@@ -26,25 +34,23 @@ export default function SettingsPage() {
   if (!hydrated) return <Spinner />;
 
   return (
-    <main className="pb-24">
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3">
-          <h1 className="text-lg font-semibold">Ustawienia</h1>
-        </div>
-      </header>
+    <>
+      <AppShell>
+        <header className="px-2 mb-2">
+          <div className="stat-label">Konfiguracja</div>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 mt-1 leading-tight">
+            Ustawienia
+          </h1>
+        </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        <section className="bg-white border border-indigo-200 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles size={16} className="text-indigo-600" />
-            <h2 className="font-semibold">Demo — pełny potencjał apki</h2>
-          </div>
-          <p className="text-sm text-neutral-500 mb-3">
+        <StatCard>
+          <StatCardHeader label="Demo · pełny potencjał apki" />
+          <p className="text-sm text-neutral-700 mb-4">
             Wczyta przykładowe cele (projekty, rutyny, mieszane) dopasowane do Twoich filarów,
             historię rutyn z ostatnich 12 tygodni, kompletacje slotów z ostatnich 4 tygodni i
             kilka myśli — żeby zobaczyć jak wszystkie widoki wyglądają wypełnione.
           </p>
-          <button
+          <Button
             onClick={() => {
               if (
                 !confirm(
@@ -55,12 +61,11 @@ export default function SettingsPage() {
               const result = seedDemoData();
               setSeedResult(result);
             }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 inline-flex items-center gap-1.5"
           >
             <Sparkles size={14} /> Wczytaj demo
-          </button>
+          </Button>
           {seedResult ? (
-            <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800">
+            <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-800">
               Dodano <b>{seedResult.goalsAdded}</b> celów,{" "}
               <b>{seedResult.completionsAdded}</b> kompletacji slotów,{" "}
               <b>{seedResult.thoughtsAdded}</b> myśli. Sprawdź:{" "}
@@ -78,79 +83,72 @@ export default function SettingsPage() {
               .
             </div>
           ) : null}
-        </section>
+        </StatCard>
 
-        <section className="bg-white border border-neutral-200 rounded-xl p-5">
-          <h2 className="font-semibold mb-3">Warstwy i filary</h2>
-          <p className="text-sm text-neutral-500 mb-3">
-            Edytuj fizjologię, podatki życiowe i filary w kalkulatorze.
-          </p>
-          <Link
-            href="/calculator"
-            className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"
-          >
-            Otwórz kalkulator
-          </Link>
-        </section>
+        <SplitGrid cols={2}>
+          <StatCard>
+            <StatCardHeader label="Warstwy i filary" />
+            <p className="text-sm text-neutral-700 mb-4">
+              Edytuj fizjologię, podatki życiowe i filary w kalkulatorze.
+            </p>
+            <LinkButton href="/calculator">Otwórz kalkulator</LinkButton>
+          </StatCard>
 
-        <section className="bg-white border border-neutral-200 rounded-xl p-5">
-          <h2 className="font-semibold mb-3">Tryb bilansu</h2>
-          <div className="grid grid-cols-2 gap-2">
+          <StatCard>
+            <StatCardHeader label="Tryb bilansu" />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setBalanceMode("calendar_month")}
+                className={`px-3 py-2 rounded-xl border text-sm transition-colors ${
+                  balanceMode === "calendar_month"
+                    ? "border-neutral-900 bg-neutral-900 text-white"
+                    : "border-neutral-200 bg-white/60 hover:border-neutral-400"
+                }`}
+              >
+                Miesiąc kalendarzowy
+              </button>
+              <button
+                onClick={() => setBalanceMode("rolling_30")}
+                className={`px-3 py-2 rounded-xl border text-sm transition-colors ${
+                  balanceMode === "rolling_30"
+                    ? "border-neutral-900 bg-neutral-900 text-white"
+                    : "border-neutral-200 bg-white/60 hover:border-neutral-400"
+                }`}
+              >
+                Kroczący 30 dni
+              </button>
+            </div>
+          </StatCard>
+
+          <StatCard>
+            <StatCardHeader
+              label="Szablon"
+              right={`aktualny: ${settings.selectedTemplate ?? "własny"}`}
+            />
+            <LinkButton href="/onboarding" variant="secondary">
+              Wybierz inny szablon
+            </LinkButton>
+          </StatCard>
+
+          <StatCard className="border-red-200/60">
+            <StatCardHeader label="Reset apki" />
+            <p className="text-sm text-neutral-700 mb-4">
+              Skasuje wszystkie dane i wróci do onboardingu.
+            </p>
             <button
-              onClick={() => setBalanceMode("calendar_month")}
-              className={`px-3 py-2 rounded-lg border text-sm ${
-                balanceMode === "calendar_month"
-                  ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                  : "border-neutral-200 hover:border-neutral-300"
-              }`}
+              onClick={() => {
+                if (!confirm("Skasować wszystko i wrócić do onboardingu?")) return;
+                resetAll();
+                router.push("/onboarding");
+              }}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-red-300 text-red-700 text-sm font-medium hover:bg-red-50 transition-colors"
             >
-              Miesiąc kalendarzowy
+              Reset
             </button>
-            <button
-              onClick={() => setBalanceMode("rolling_30")}
-              className={`px-3 py-2 rounded-lg border text-sm ${
-                balanceMode === "rolling_30"
-                  ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                  : "border-neutral-200 hover:border-neutral-300"
-              }`}
-            >
-              Kroczący 30 dni
-            </button>
-          </div>
-        </section>
-
-        <section className="bg-white border border-neutral-200 rounded-xl p-5">
-          <h2 className="font-semibold mb-1">Szablon</h2>
-          <p className="text-sm text-neutral-500 mb-3">
-            Aktualny: {settings.selectedTemplate ?? "własny"}
-          </p>
-          <Link
-            href="/onboarding"
-            className="inline-block px-4 py-2 border border-neutral-200 rounded-lg text-sm hover:border-neutral-400"
-          >
-            Wybierz inny szablon
-          </Link>
-        </section>
-
-        <section className="bg-white border border-red-200 rounded-xl p-5">
-          <h2 className="font-semibold mb-1 text-red-700">Reset apki</h2>
-          <p className="text-sm text-neutral-500 mb-3">
-            Skasuje wszystkie dane i wróci do onboardingu.
-          </p>
-          <button
-            onClick={() => {
-              if (!confirm("Skasować wszystko i wrócić do onboardingu?")) return;
-              resetAll();
-              router.push("/onboarding");
-            }}
-            className="px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm hover:bg-red-50"
-          >
-            Reset
-          </button>
-        </section>
-      </div>
-
-      <BottomNav />
-    </main>
+          </StatCard>
+        </SplitGrid>
+      </AppShell>
+      <SideNav />
+    </>
   );
 }

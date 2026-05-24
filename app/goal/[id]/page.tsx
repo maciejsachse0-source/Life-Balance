@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/hydration";
 import { Spinner } from "@/components/Spinner";
-import { BottomNav } from "@/components/BottomNav";
+import { SideNav } from "@/components/SideNav";
 import { Modal } from "@/components/Modal";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { AppShell, StatCard, StatDivider } from "@/components/ui";
+import { InlineTextarea } from "@/components/InlineTextarea";
 import type { TaskStatus, WorkType, RoutineConfig, GoalView } from "@/lib/types";
 import { Heatmap } from "@/components/routine/Heatmap";
 import { getRoutineStats } from "@/lib/routine";
@@ -28,6 +30,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
   const updateTask = useStore((s) => s.updateTask);
   const removeTask = useStore((s) => s.removeTask);
   const removeGoal = useStore((s) => s.removeGoal);
+  const updateGoal = useStore((s) => s.updateGoal);
   const updateMilestone = useStore((s) => s.updateMilestone);
   const toggleRoutineCompletion = useStore((s) => s.toggleRoutineCompletion);
   const setRoutineConfig = useStore((s) => s.setRoutineConfig);
@@ -38,12 +41,16 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
   if (!hydrated) return <Spinner />;
   if (!goal) {
     return (
-      <main className="p-8 text-center">
-        <p className="text-neutral-500">Cel nie znaleziony.</p>
-        <Link href="/dashboard" className="text-indigo-600">
-          ← Dashboard
-        </Link>
-      </main>
+      <AppShell>
+        <StatCard>
+          <p className="text-neutral-700 text-center">Cel nie znaleziony.</p>
+          <div className="text-center mt-3">
+            <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900">
+              ← Dashboard
+            </Link>
+          </div>
+        </StatCard>
+      </AppShell>
     );
   }
 
@@ -62,59 +69,92 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
     return ms.reduce((acc, m) => acc + milestoneProgress(m.id), 0) / ms.length;
   };
 
+  const accent = pillar?.color ?? "#525252";
+
   return (
-    <main className="pb-24">
-      <header
-        className="px-4 py-6 sm:px-6 text-white"
-        style={{
-          background: pillar
-            ? `linear-gradient(135deg, ${pillar.color}, ${pillar.color}cc)`
-            : "linear-gradient(135deg,#525252,#262626)",
-        }}
+    <AppShell width="wide">
+      <Link
+        href={pillar ? `/pillar/${pillar.id}` : "/dashboard"}
+        className="inline-flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900 mb-1 px-2"
       >
-        <div className="max-w-5xl mx-auto">
-          <Link
-            href={pillar ? `/pillar/${pillar.id}` : "/dashboard"}
-            className="inline-flex items-center gap-1 text-white/80 hover:text-white text-sm mb-3"
-          >
-            <ArrowLeft size={14} /> {pillar?.name ?? "Dashboard"}
-          </Link>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-xs uppercase tracking-wider text-white/70 mb-1">
-                {goal.character} · {goal.status}
-                {goal.deadline ? ` · do ${new Date(goal.deadline).toLocaleDateString("pl")}` : ""}
+        <ArrowLeft size={14} /> {pillar?.name ?? "Dashboard"}
+      </Link>
+
+      <StatCard>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="stat-label flex items-center gap-1.5" style={{ color: accent }}>
+              <span
+                className="inline-block w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: accent }}
+              />
+              {goal.character} · {goal.status}
+              {goal.deadline ? ` · do ${new Date(goal.deadline).toLocaleDateString("pl")}` : ""}
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 mt-1 leading-tight">
+              {goal.title}
+            </h1>
+            <div className="mt-5">
+              <div className="flex items-baseline justify-between mb-1.5">
+                <span className="stat-label">Postęp</span>
+                <span className="text-2xl font-bold tabular-nums text-neutral-900">
+                  {Math.round(goalProgress())}%
+                </span>
               </div>
-              <h1 className="text-3xl font-bold">{goal.title}</h1>
-              {goal.vision ? <p className="mt-2 text-white/80">{goal.vision}</p> : null}
-              <div className="mt-4">
-                <div className="text-xs text-white/70 mb-1">Postęp: {Math.round(goalProgress())}%</div>
-                <div className="h-1.5 rounded-full bg-white/20 overflow-hidden">
-                  <div
-                    className="h-full bg-white"
-                    style={{ width: `${Math.min(100, goalProgress())}%` }}
-                  />
-                </div>
+              <div className="h-2 rounded-full bg-neutral-100 overflow-hidden">
+                <div
+                  className="h-full transition-all"
+                  style={{
+                    width: `${Math.min(100, goalProgress())}%`,
+                    backgroundColor: accent,
+                  }}
+                />
               </div>
             </div>
-            <button
-              onClick={() => {
-                if (!confirm("Usunąć cel?")) return;
-                removeGoal(goal.id);
-                if (typeof window !== "undefined") {
-                  window.location.href = pillar ? `/pillar/${pillar.id}` : "/dashboard";
-                }
-              }}
-              className="p-2 hover:bg-white/10 rounded text-white/70"
-              aria-label="Usuń cel"
-            >
-              <Trash2 size={16} />
-            </button>
           </div>
+          <button
+            onClick={() => {
+              if (!confirm("Usunąć cel?")) return;
+              removeGoal(goal.id);
+              if (typeof window !== "undefined") {
+                window.location.href = pillar ? `/pillar/${pillar.id}` : "/dashboard";
+              }
+            }}
+            className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-red-500 shrink-0 transition-colors"
+            aria-label="Usuń cel"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
-      </header>
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 mt-6">
+        <StatDivider />
+
+        <GoalWhyField
+          label="Po co ten cel"
+          value={goal.description ?? ""}
+          onChange={(v) =>
+            updateGoal(goal.id, { description: v.trim() || undefined })
+          }
+          placeholder="Aby… (np. żeby wreszcie obronić tezę i zamknąć ten rozdział życia)"
+          accent={accent}
+          emphasis="primary"
+        />
+
+        <StatDivider />
+
+        <GoalWhyField
+          label="Jak będzie wyglądał sukces"
+          value={goal.vision ?? ""}
+          onChange={(v) =>
+            updateGoal(goal.id, { vision: v.trim() || undefined })
+          }
+          placeholder="…tak by (np. móc otworzyć pracę na dowolnej stronie i wiedzieć, że jest moja)"
+          accent={accent}
+          emphasis="secondary"
+        />
+      </StatCard>
+
+      <section>
         {goal.character === "Routine" ? (
           <RoutineView
             goal={goal}
@@ -190,8 +230,8 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
         />
       </Modal>
 
-      <BottomNav />
-    </main>
+      <SideNav />
+    </AppShell>
   );
 }
 
@@ -441,6 +481,45 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="bg-neutral-50 rounded-lg p-3">
       <div className="text-xs text-neutral-500">{label}</div>
       <div className="text-xl font-semibold mt-0.5">{value}</div>
+    </div>
+  );
+}
+
+function GoalWhyField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  accent,
+  emphasis,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  accent: string;
+  emphasis: "primary" | "secondary";
+}) {
+  return (
+    <div className="py-1">
+      <div className="stat-label mb-2 flex items-center">
+        <span
+          className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 shrink-0"
+          style={{ backgroundColor: accent }}
+        />
+        <span>{label}</span>
+      </div>
+      <InlineTextarea
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        minRows={2}
+        className={
+          emphasis === "primary"
+            ? "text-base sm:text-lg text-neutral-800 leading-relaxed"
+            : "text-sm text-neutral-700 leading-relaxed"
+        }
+      />
     </div>
   );
 }
