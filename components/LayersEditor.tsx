@@ -5,7 +5,33 @@ import { Slider } from "@/components/Slider";
 import { InlineInput } from "@/components/InlineInput";
 import { PillarIcon } from "@/components/PillarIcon";
 import { computeAllocation } from "@/lib/utils";
-import { Plus, Trash2, AlertTriangle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  AlertTriangle,
+  Moon,
+  Utensils,
+  Droplets,
+  Sparkles,
+  Route,
+  Hourglass,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+type TileStyle = { fg: string; bg: string; Icon: LucideIcon; max: number };
+
+const PHYS_STYLE: Record<string, TileStyle> = {
+  "phys-sleep":   { fg: "#6366f1", bg: "#eef2ff", Icon: Moon,     max: 84 },
+  "phys-food":    { fg: "#d97706", bg: "#fef3c7", Icon: Utensils, max: 30 },
+  "phys-hygiene": { fg: "#0891b2", bg: "#ecfeff", Icon: Droplets, max: 20 },
+};
+const PHYS_DEFAULT: TileStyle = { fg: "#64748b", bg: "#f1f5f9", Icon: Sparkles, max: 40 };
+
+const TAX_STYLE: Record<string, TileStyle> = {
+  "tax-logistics": { fg: "#8b5cf6", bg: "#f5f3ff", Icon: Route,     max: 40 },
+  "tax-buffer":    { fg: "#10b981", bg: "#ecfdf5", Icon: Hourglass, max: 40 },
+};
+const TAX_DEFAULT: TileStyle = { fg: "#64748b", bg: "#f1f5f9", Icon: Sparkles, max: 40 };
 
 type Props = {
   showResultSection?: boolean;
@@ -29,81 +55,83 @@ export function LayersEditor({ showResultSection = true }: Props) {
 
   return (
     <div className="space-y-5">
-      <section className="bg-white border border-neutral-200 rounded-xl p-5">
-        <header className="flex items-baseline justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-semibold">Fizjologia</h2>
-            <p className="text-sm text-neutral-500">
-              Sen, jedzenie, higiena — to co konieczne dla ciała.
-            </p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <section>
+          <header className="flex items-baseline justify-between mb-3 px-1">
+            <div>
+              <h2 className="text-xl font-semibold">Fizjologia</h2>
+              <p className="text-sm text-neutral-500">
+                Sen, jedzenie, higiena — to co konieczne dla ciała.
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold tabular-nums">{fizSum}h</div>
+              <div className="text-xs text-neutral-500">/ tydzień</div>
+            </div>
+          </header>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {layers.physiology.map((cat) => (
+              <LayerTile
+                key={cat.id}
+                cat={cat}
+                style={PHYS_STYLE[cat.id] ?? PHYS_DEFAULT}
+                onUpdate={(p) => updatePhys(cat.id, p)}
+                onRemove={() => removePhys(cat.id)}
+              />
+            ))}
+            <button
+              onClick={() => addPhys({ name: "Nowa kategoria", hoursPerWeek: 1 })}
+              className="flex items-center justify-center gap-1.5 text-sm text-neutral-500 hover:text-indigo-600 hover:border-indigo-300 border border-dashed border-neutral-300 rounded-xl min-h-[110px] transition-colors"
+            >
+              <Plus size={14} /> Dodaj kategorię
+            </button>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold">{fizSum}h</div>
-            <div className="text-xs text-neutral-500">/ tydzień</div>
-          </div>
-        </header>
-        <div className="space-y-3">
-          {layers.physiology.map((cat) => (
-            <CategoryRow
-              key={cat.id}
-              cat={cat}
-              max={84}
-              onUpdate={(p) => updatePhys(cat.id, p)}
-              onRemove={() => removePhys(cat.id)}
-            />
-          ))}
-        </div>
-        <button
-          onClick={() => addPhys({ name: "Nowa kategoria", hoursPerWeek: 1 })}
-          className="mt-3 inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700"
-        >
-          <Plus size={14} /> Dodaj kategorię
-        </button>
-      </section>
+        </section>
 
-      <section className="bg-white border border-neutral-200 rounded-xl p-5">
-        <header className="flex items-baseline justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-semibold">Podatki życiowe</h2>
-            <p className="text-sm text-neutral-500">
-              Logistyka, bufor — czas pożerany przez życie.
-            </p>
+        <section>
+          <header className="flex items-baseline justify-between mb-3 px-1">
+            <div>
+              <h2 className="text-xl font-semibold">Podatki życiowe</h2>
+              <p className="text-sm text-neutral-500">
+                Logistyka, bufor — czas pożerany przez życie.
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold tabular-nums">{taxSum}h</div>
+              <div className="text-xs text-neutral-500">/ tydzień</div>
+            </div>
+          </header>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {layers.lifeTaxes.map((cat) => (
+              <LayerTile
+                key={cat.id}
+                cat={cat}
+                style={TAX_STYLE[cat.id] ?? TAX_DEFAULT}
+                onUpdate={(p) => updateTax(cat.id, p)}
+                onRemove={() => removeTax(cat.id)}
+              />
+            ))}
+            <button
+              onClick={() => addTax({ name: "Nowa kategoria", hoursPerWeek: 1 })}
+              className="flex items-center justify-center gap-1.5 text-sm text-neutral-500 hover:text-indigo-600 hover:border-indigo-300 border border-dashed border-neutral-300 rounded-xl min-h-[110px] transition-colors"
+            >
+              <Plus size={14} /> Dodaj kategorię
+            </button>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold">{taxSum}h</div>
-            <div className="text-xs text-neutral-500">/ tydzień</div>
-          </div>
-        </header>
-        <div className="space-y-3">
-          {layers.lifeTaxes.map((cat) => (
-            <CategoryRow
-              key={cat.id}
-              cat={cat}
-              max={40}
-              onUpdate={(p) => updateTax(cat.id, p)}
-              onRemove={() => removeTax(cat.id)}
-            />
-          ))}
-        </div>
-        <button
-          onClick={() => addTax({ name: "Nowa kategoria", hoursPerWeek: 1 })}
-          className="mt-3 inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700"
-        >
-          <Plus size={14} /> Dodaj kategorię
-        </button>
-      </section>
+        </section>
+      </div>
 
-      <section className="bg-white border border-neutral-200 rounded-xl p-5">
+      <section className="stat-card p-5 sm:p-6">
         <header className="flex items-baseline justify-between mb-4">
           <div>
-            <h2 className="text-xl font-semibold">Filary</h2>
-            <p className="text-sm text-neutral-500">
+            <h2 className="text-xl font-semibold tracking-tight">Filary</h2>
+            <p className="text-sm text-neutral-600">
               Obszary życia. Wagi 1-10, dzielą pozostały czas.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold">{allocation.pulaFilarowH.toFixed(1)}h</div>
-            <div className="text-xs text-neutral-500">do podziału</div>
+            <div className="text-2xl font-bold tabular-nums">{allocation.pulaFilarowH.toFixed(1)}h</div>
+            <div className="stat-label">do podziału</div>
           </div>
         </header>
         <div className="space-y-3">
@@ -126,7 +154,6 @@ export function LayersEditor({ showResultSection = true }: Props) {
                     min={0.5}
                     max={10}
                     step={0.5}
-                    color={p.color}
                     onChange={(v) => updatePillar(p.id, { weight: v })}
                   />
                   <div className="text-xs text-neutral-500 mt-0.5">Waga {p.weight.toFixed(1)}</div>
@@ -173,20 +200,20 @@ export function LayersEditor({ showResultSection = true }: Props) {
       </section>
 
       {showResultSection ? (
-        <section className="bg-neutral-900 text-white rounded-xl p-5">
-          <h2 className="text-xl font-semibold mb-3">Wynik tygodniowy</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <Stat label="168h" value="cały tydzień" />
-            <Stat label={`-${fizSum}h`} value="fizjologia" />
-            <Stat label={`-${taxSum}h`} value="podatki" />
-            <Stat
-              label={`${allocation.pulaFilarowH.toFixed(1)}h`}
-              value="pula filarów"
+        <section className="stat-card p-5 sm:p-6">
+          <div className="stat-label mb-4">Wynik tygodniowy</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <ResultStat label="cały tydzień" value="168h" />
+            <ResultStat label="fizjologia" value={`-${fizSum}h`} />
+            <ResultStat label="podatki" value={`-${taxSum}h`} />
+            <ResultStat
+              label="pula filarów"
+              value={`${allocation.pulaFilarowH.toFixed(1)}h`}
               highlight
             />
           </div>
           {allocation.pulaFilarowH < 0 ? (
-            <div className="mt-4 text-xs bg-red-500/20 border border-red-400/30 rounded px-3 py-2 flex items-center gap-2">
+            <div className="mt-4 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-center gap-2">
               <AlertTriangle size={14} /> Suma fizjologii i podatków przekracza 168h — popraw
               warstwy.
             </div>
@@ -197,60 +224,83 @@ export function LayersEditor({ showResultSection = true }: Props) {
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function ResultStat({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
     <div>
-      <div className={`text-3xl font-bold ${highlight ? "text-indigo-300" : ""}`}>{label}</div>
-      <div className="text-xs text-neutral-400">{value}</div>
+      <div className="stat-label mb-1">{label}</div>
+      <div
+        className={`text-2xl sm:text-3xl font-bold tracking-tight tabular-nums ${highlight ? "text-neutral-900" : "text-neutral-700"}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }
 
-function CategoryRow({
+function LayerTile({
   cat,
-  max,
+  style,
   onUpdate,
   onRemove,
 }: {
   cat: { id: string; name: string; hoursPerWeek: number; healthyMin?: number };
-  max: number;
+  style: TileStyle;
   onUpdate: (p: Partial<{ name: string; hoursPerWeek: number }>) => void;
   onRemove: () => void;
 }) {
+  const { fg, bg, Icon, max } = style;
   const tooLow = cat.healthyMin !== undefined && cat.hoursPerWeek < cat.healthyMin;
   return (
-    <div>
-      <div className="grid grid-cols-12 items-center gap-3">
-        <div className="col-span-12 sm:col-span-4">
-          <InlineInput
-            value={cat.name}
-            onChange={(name) => onUpdate({ name })}
-            className="font-medium bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-indigo-500 focus:outline-none px-1 w-full"
-          />
-        </div>
-        <div className="col-span-9 sm:col-span-6">
-          <Slider
-            value={cat.hoursPerWeek}
-            min={0}
-            max={max}
-            step={0.5}
-            onChange={(v) => onUpdate({ hoursPerWeek: v })}
-          />
-        </div>
-        <div className="col-span-2 sm:col-span-1 text-sm font-medium tabular-nums">
-          {cat.hoursPerWeek}h
-        </div>
+    <div
+      className="phys-tile rounded-xl p-3"
+      style={{ ["--phys-fg" as string]: fg, ["--phys-bg" as string]: bg }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <span className="phys-tile-icon w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+          <Icon size={16} />
+        </span>
+        <InlineInput
+          value={cat.name}
+          onChange={(name) => onUpdate({ name })}
+          className="font-medium bg-transparent border-b border-transparent hover:border-black/15 focus:border-black/40 focus:outline-none px-0.5 flex-1 min-w-0"
+        />
         <button
           onClick={onRemove}
-          className="col-span-1 text-neutral-400 hover:text-red-500 justify-self-end"
+          className="text-neutral-400 hover:text-red-500 shrink-0"
           aria-label="Usuń kategorię"
         >
-          <Trash2 size={16} />
+          <Trash2 size={14} />
         </button>
       </div>
+      <div className="flex items-baseline justify-between mb-1.5">
+        <div className="text-xs text-neutral-600 leading-tight">
+          <div>godziny / tydzień</div>
+          <div className="text-neutral-500 tabular-nums">
+            ≈ {(cat.hoursPerWeek / 7).toFixed(1)}h / dzień
+          </div>
+        </div>
+        <span className="text-lg font-bold tabular-nums" style={{ color: fg }}>
+          {cat.hoursPerWeek}h
+        </span>
+      </div>
+      <Slider
+        value={cat.hoursPerWeek}
+        min={0}
+        max={max}
+        step={0.5}
+        onChange={(v) => onUpdate({ hoursPerWeek: v })}
+      />
       {tooLow ? (
-        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1.5 flex items-center gap-1">
-          <AlertTriangle size={12} /> Poniżej zalecanego minimum {cat.healthyMin}h
+        <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 mt-2 flex items-center gap-1">
+          <AlertTriangle size={11} /> Min. {cat.healthyMin}h
         </div>
       ) : null}
     </div>
