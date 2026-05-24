@@ -492,6 +492,75 @@ export function seedDemoData() {
     });
   }
 
+  // === Historical goals (Done / Abandoned / Paused) — for Lifecycle tab ===
+  if (work) {
+    goalSeeds.push({
+      pillarId: work.id,
+      title: "Migracja na nowy framework — Q1",
+      character: "Project",
+      status: "Done",
+      weight: 6,
+      milestones: [
+        {
+          title: "Audyt zależności",
+          tasks: [
+            { title: "Lista pakietów do wymiany", status: "Done", workType: "shallow" },
+            { title: "POC migracji", status: "Done", workType: "deep" },
+          ],
+        },
+        {
+          title: "Wdrożenie",
+          tasks: [
+            { title: "Migracja modułów A-C", status: "Done", workType: "deep" },
+            { title: "Testy regresji", status: "Done", workType: "shallow" },
+            { title: "Deploy + monitoring", status: "Done", workType: "shallow" },
+          ],
+        },
+      ],
+    });
+  }
+  if (body) {
+    goalSeeds.push({
+      pillarId: body.id,
+      title: "Crossfit — eksperyment 2-mies.",
+      character: "Routine",
+      status: "Abandoned",
+      routineConfig: {
+        frequency: "weekly",
+        timesPerWeek: 3,
+        durationMinutes: 60,
+        workType: "physical",
+        historyWeeks: 8,
+        completionRate: 0.4,
+      },
+    });
+  }
+  if (mind) {
+    goalSeeds.push({
+      pillarId: mind.id,
+      title: "Kurs SQL na Courserze",
+      character: "Project",
+      status: "Paused",
+      weight: 3,
+      milestones: [
+        {
+          title: "Moduł 1: podstawy",
+          tasks: [
+            { title: "Lekcje 1-5", status: "Done", workType: "deep" },
+            { title: "Quiz 1", status: "Done", workType: "shallow" },
+          ],
+        },
+        {
+          title: "Moduł 2: joins",
+          tasks: [
+            { title: "Lekcje 6-10", status: "Todo", workType: "deep" },
+            { title: "Projekt końcowy", status: "Todo", workType: "creative" },
+          ],
+        },
+      ],
+    });
+  }
+
   // ----- Apply -----
   let goalsAdded = 0;
   for (let gi = 0; gi < goalSeeds.length; gi++) {
@@ -573,26 +642,41 @@ export function seedDemoData() {
     goalsAdded++;
   }
 
-  // ----- Slot completions for last 4 weeks (~75% adherence) -----
+  // ----- Slot completions for last 13 weeks with weekly variability -----
+  // Pattern: 13 weeks of adherence multipliers — realistic ebb & flow
+  const weeklyAdherence = [
+    0.55, 0.60, 0.70, 0.80, 0.85, 0.90, 0.75, 0.65, 0.70, 0.85, 0.90, 0.80, 0.78,
+  ]; // index 0 = oldest week, index 12 = current week
   const slots = state.calendar.template.slots;
   const newCompletions: SlotCompletion[] = [];
   const today = new Date();
   const rand = seededRandom(13);
-  for (let d = 0; d < 28; d++) {
+  const totalDays = 13 * 7; // 91 days
+  for (let d = 0; d < totalDays; d++) {
     const date = subDays(today, d);
+    if (date > today) continue;
     const dow = date.getDay();
     const monday = startOfWeek(date, { weekStartsOn: 1 });
+    const weekIdx = Math.min(12, Math.max(0, 12 - Math.floor(d / 7)));
+    const baseRate = weeklyAdherence[weekIdx];
     const slotsForDay = slots.filter((s) => s.dayOfWeek === dow);
     for (const s of slotsForDay) {
-      // Skip sleep / hygiene routine slots — those are auto-done
-      const completionRate = s.workType === "routine" ? 0.95 : 0.75;
+      // Routine slots (sleep/hygiene) are auto-done; buffer skipped sometimes
+      const typeMultiplier =
+        s.workType === "routine"
+          ? 1.15
+          : s.workType === "buffer"
+          ? 0.6
+          : 1.0;
+      const completionRate = Math.min(0.97, baseRate * typeMultiplier);
       if (rand() < completionRate) {
         newCompletions.push({
           id: uid(),
           slotId: s.id,
           weekStartDate: format(monday, "yyyy-MM-dd"),
           date: format(date, "yyyy-MM-dd"),
-          completed: rand() > 0.15,
+          // Of the attempted, ~88% genuinely completed (binary Yes/No)
+          completed: rand() > 0.12,
           attemptedAt: date.toISOString(),
         });
       }
